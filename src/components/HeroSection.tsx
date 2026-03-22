@@ -1,23 +1,40 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useRef, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowDown } from 'lucide-react';
 import InteractiveCloth from './InteractiveCloth';
 
-const VIDEO_URL = 'https://raw.githubusercontent.com/mahimr837-stack/butex/main/Gen-4%20Turbo%20a%20drone%20shot%203860136260.mp4';
+const VIDEOS = [
+  'https://raw.githubusercontent.com/mahimr837-stack/butex/main/Gen-4%20Turbo%20a%20drone%20shot%203860136260.mp4',
+  'https://raw.githubusercontent.com/mahimr837-stack/butex-2/main/Gen-4%20Turbo%20a%20drone%20shot%203860136260.mp4',
+];
 
 const HeroSection: React.FC = () => {
+  const [currentVideo, setCurrentVideo] = useState(0);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const handleVideoEnd = useCallback(() => {
+    setCurrentVideo((prev) => (prev + 1) % VIDEOS.length);
+  }, []);
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Background Video */}
-      <video
-        autoPlay
-        muted
-        loop
-        playsInline
-        className="absolute inset-0 w-full h-full object-cover z-0"
-      >
-        <source src={VIDEO_URL} type="video/mp4" />
-      </video>
+      {/* Background Videos - crossfade on end */}
+      <AnimatePresence mode="wait">
+        <motion.video
+          key={currentVideo}
+          ref={videoRef}
+          autoPlay
+          muted
+          playsInline
+          onEnded={handleVideoEnd}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 1.2 }}
+          className="absolute inset-0 w-full h-full object-cover z-0"
+          src={VIDEOS[currentVideo]}
+        />
+      </AnimatePresence>
 
       {/* Dark overlay for text legibility */}
       <div className="absolute inset-0 bg-indigo-deep/60 z-[1]" style={{ backgroundColor: 'hsla(209, 30%, 26%, 0.65)' }} />
