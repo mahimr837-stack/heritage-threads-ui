@@ -89,3 +89,54 @@
     ) 8;
   }
 }
+
+/* Sewing Machine Blueprint Animations */
+@keyframes sewing-spin {
+  100% { transform: rotate(360deg); }
+}
+@keyframes sewing-pump {
+  0%, 100% { transform: translateY(40px); }
+  50% { transform: translateY(0px); }
+}
+@keyframes sewing-swing {
+  0%, 100% { transform: rotate(-40deg); }
+  50% { transform: rotate(0deg); }
+}
+@keyframes sewing-belt-move {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: 50; }
+}
+@keyframes sewing-stitches {
+  0%, 25% { stroke-dashoffset: 0; }
+  75%, 100% { stroke-dashoffset: 14; }
+}
+@keyframes sewing-thread-flow {
+  from { stroke-dashoffset: 8; }
+  to { stroke-dashoffset: 0; }
+}
+
+.sewing-handwheel {
+  transform-origin: 600px 280px;
+  animation: sewing-spin 1.5s linear infinite;
+}
+.sewing-bobbin {
+  transform-origin: 240px 580px;
+  animation: sewing-spin 1.5s linear infinite;
+}
+.sewing-needle {
+  animation: sewing-pump 1.5s ease-in-out infinite;
+}
+.sewing-takeup {
+  transform-origin: 200px 350px;
+  animation: sewing-swing 1.5s ease-in-out infinite;
+}
+.sewing-belt {
+  stroke-dasharray: 15 10;
+  animation: sewing-belt-move 1.5s linear infinite;
+}
+.sewing-stitches line {
+  animation: sewing-stitches 1.5s ease-in-out infinite;
+}
+.sewing-thread {
+  animation: sewing-thread-flow 0.5s linear infinite;
+}
