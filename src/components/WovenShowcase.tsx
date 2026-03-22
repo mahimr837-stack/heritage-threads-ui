@@ -1,8 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import WovenTypography from '../components/WovenTypography';
-
-const LOTTIE_URL = 'https://lottie.host/embed/861bb6ce-96c1-46b9-9ad8-b3f90df146d4/CCzk3CfSrd.lottie';
+import SewingMachineBlueprint from '../components/SewingMachineBlueprint';
 
 const WovenShowcase: React.FC = () => {
   return (
@@ -25,20 +24,15 @@ const WovenShowcase: React.FC = () => {
 
         <WovenTypography />
 
-        {/* Lottie Animation */}
+        {/* Animated Sewing Machine Blueprint */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="max-w-md mx-auto mt-12"
+          className="max-w-lg mx-auto mt-12"
         >
-          <iframe
-            src={LOTTIE_URL}
-            className="w-full aspect-square border-0"
-            title="Textile Lottie Animation"
-            style={{ background: 'transparent' }}
-          />
+          <SewingMachineBlueprint />
         </motion.div>
       </div>
     </section>
