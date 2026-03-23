@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import PhulkariEmbroidery from './PhulkariEmbroidery';
 import sewingMachineArt from '@/assets/sewing-machine-art.png';
 import textileWomanArt from '@/assets/textile-woman-art.png';
+import vogueWomanArt from '@/assets/vogue-woman-art.png';
+import weaversTapestryArt from '@/assets/weavers-tapestry-art.png';
 
 const WovenShowcase: React.FC = () => {
   return (
@@ -28,6 +30,28 @@ const WovenShowcase: React.FC = () => {
         viewport={{ once: true, amount: 0.2 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         className="absolute top-6 right-6 w-36 md:w-52 pointer-events-none select-none z-0"
+      />
+      {/* Vogue woman art - left side */}
+      <motion.img
+        src={vogueWomanArt}
+        alt=""
+        aria-hidden="true"
+        initial={{ opacity: 0, x: -40 }}
+        whileInView={{ opacity: 0.22, x: 0 }}
+        viewport={{ once: true, amount: 0.2 }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="absolute top-1/2 -translate-y-1/2 left-4 md:left-8 w-40 md:w-56 pointer-events-none select-none z-0"
+      />
+      {/* Weavers tapestry art - center */}
+      <motion.img
+        src={weaversTapestryArt}
+        alt=""
+        aria-hidden="true"
+        initial={{ opacity: 0, scale: 0.95 }}
+        whileInView={{ opacity: 0.12, scale: 1 }}
+        viewport={{ once: true, amount: 0.2 }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 md:w-96 pointer-events-none select-none z-0"
       />
       <div className="container mx-auto px-6 relative z-10">
         <motion.div
