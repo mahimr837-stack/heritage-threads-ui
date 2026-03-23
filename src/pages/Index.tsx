@@ -8,10 +8,14 @@ import EventsSection from '../components/EventsSection';
 import FooterSection from '../components/FooterSection';
 import StitchTransition from '../components/StitchTransition';
 import StitchingWave from '../components/StitchingWave';
+import ScrollNeedleThread from '../components/ScrollNeedleThread';
 
 const Index: React.FC = () => {
   return (
     <div className="min-h-screen bg-background relative">
+      {/* Scroll-driven needle & thread animation */}
+      <ScrollNeedleThread />
+
       {/* Parchment aged-edge texture overlay */}
       <div
         className="fixed inset-0 pointer-events-none z-[60] opacity-30"
