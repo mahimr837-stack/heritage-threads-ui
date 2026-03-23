@@ -41,7 +41,7 @@ const WovenShowcase: React.FC = () => {
         src={butex1}
         alt=""
         aria-hidden="true"
-        className="absolute bottom-4 left-4 w-40 md:w-56 pointer-events-none select-none z-[5] opacity-85"
+        className="absolute bottom-6 left-[70px] md:left-[80px] w-32 md:w-44 pointer-events-none select-none z-[5] opacity-85"
       />
 
       {/* Butex art 2 - bottom right (sewing machine) */}
