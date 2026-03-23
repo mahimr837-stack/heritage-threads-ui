@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { Users, Building2, Globe2, Trophy } from 'lucide-react';
-import PhulkariEmbroidery from './PhulkariEmbroidery';
+import SewingMachineBlueprint from './SewingMachineBlueprint';
 
 const stats = [
   { label: 'Batches Graduated', value: 51, suffix: '+', icon: Trophy },
