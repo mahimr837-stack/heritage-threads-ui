@@ -4,8 +4,8 @@ import { ArrowDown } from 'lucide-react';
 import InteractiveCloth from './InteractiveCloth';
 
 const VIDEOS = [
-  'https://raw.githubusercontent.com/mahimr837-stack/butex/main/Gen-4%20Turbo%20a%20drone%20shot%203860136260.mp4',
-  'https://raw.githubusercontent.com/mahimr837-stack/butex-2/main/Gen-4%20Turbo%20a%20drone%20shot%203860136260.mp4',
+  'https://raw.githubusercontent.com/mahimr837-stack/butex-3/main/Gen-4%20Turbo%20a%20drone%20shot%203860136260.mp4',
+  'https://raw.githubusercontent.com/mahimr837-stack/butex-3/main/Gen-4%20Turbo%20a%20sidewise%20moving%20fast%20drone%20shot%20above%20the%20ground%204192939130%20(1).mp4',
 ];
 
 const HeroSection: React.FC = () => {
