@@ -44,31 +44,22 @@ const ScrollNeedleThread: React.FC = () => {
     function drawNeedle(x: number, y: number, angle: number) {
       if (!ctx) return;
 
-      // Thread tail
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.bezierCurveTo(15, 10, -10, 30, 5, 50);
-      ctx.strokeStyle = 'hsl(12, 76%, 52%)'; // terracotta thread
-      ctx.lineWidth = 2.5;
-      ctx.stroke();
-      ctx.restore();
-
-      // Needle body
+      // Needle body — tip points forward (in direction of travel)
       ctx.save();
       ctx.translate(x, y);
       ctx.rotate(angle);
       const nLen = 90;
       const nWidth = 6;
 
+      // Draw needle with tip at top (positive direction of travel)
+      // The needle tip leads, eye trails behind connecting to thread
       ctx.beginPath();
-      ctx.moveTo(-nWidth / 2, 0);
-      ctx.lineTo(-nWidth / 2 + 1, nLen - 20);
-      ctx.lineTo(0, nLen);
-      ctx.lineTo(nWidth / 2 - 1, nLen - 20);
+      ctx.moveTo(-nWidth / 2, 0);          // eye end (connects to thread)
+      ctx.lineTo(-nWidth / 2 + 1, -nLen + 20); // shaft
+      ctx.lineTo(0, -nLen);                 // sharp tip (leading edge)
+      ctx.lineTo(nWidth / 2 - 1, -nLen + 20);
       ctx.lineTo(nWidth / 2, 0);
-      ctx.arc(0, 0, nWidth / 2, 0, Math.PI, true);
+      ctx.arc(0, 0, nWidth / 2, 0, Math.PI, false);
 
       const grad = ctx.createLinearGradient(-nWidth / 2, 0, nWidth / 2, 0);
       grad.addColorStop(0, '#888');
@@ -81,10 +72,10 @@ const ScrollNeedleThread: React.FC = () => {
       ctx.lineWidth = 0.5;
       ctx.stroke();
 
-      // Needle eye
+      // Needle eye (at the base, near thread connection)
       ctx.globalCompositeOperation = 'destination-out';
       ctx.beginPath();
-      ctx.ellipse(0, 3, 1.2, 7, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, -3, 1.2, 7, 0, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
     }
