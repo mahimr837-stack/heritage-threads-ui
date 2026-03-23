@@ -24,9 +24,6 @@ const Index: React.FC = () => {
       />
 
       {/* Decorative Stitching Wave along left side */}
-      <div className="fixed left-4 top-0 bottom-0 pointer-events-none z-[5] hidden lg:block">
-        <StitchingWave className="w-full max-w-[120px] opacity-60 h-full" />
-      </div>
 
       <Navbar />
       <HeroSection />
