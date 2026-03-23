@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import vogueWomanArt2 from '@/assets/vogue-woman-art-2.png';
 
 const WovenShowcase: React.FC = () => {
   const [animate, setAnimate] = useState(false);
