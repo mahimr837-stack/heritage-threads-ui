@@ -33,13 +33,46 @@ const StitchTransition: React.FC = () => {
   const pathLength = NUM_HOLES * HOLE_SPACING * 1.2; // approximate
   const dashOffset = useTransform(scrollYProgress, [0, 1], [pathLength, 0]);
 
-  // Needle position: move across the SVG width
-  const needleX = useTransform(scrollYProgress, [0, 1], [holes[0].x, holes[NUM_HOLES - 1].x]);
+  // Sample many points along the wavy stitch path for smooth needle tracking
+  const SAMPLES = 100;
+  const sampleKeys: number[] = [];
+  const sampleXValues: number[] = [];
+  const sampleYValues: number[] = [];
+  const sampleAngleValues: number[] = [];
 
-  // Needle Y follows the wave pattern
-  const needleYKeys = holes.map((_, i) => i / (NUM_HOLES - 1));
-  const needleYValues = holes.map((h) => h.y);
-  const needleY = useTransform(scrollYProgress, needleYKeys, needleYValues);
+  for (let s = 0; s <= SAMPLES; s++) {
+    const t = s / SAMPLES;
+    sampleKeys.push(t);
+
+    // Figure out which segment we're in
+    const totalSegments = holes.length - 1;
+    const rawSeg = t * totalSegments;
+    const segIndex = Math.min(Math.floor(rawSeg), totalSegments - 1);
+    const segT = rawSeg - segIndex;
+
+    const p0x = holes[segIndex].x;
+    const p0y = holes[segIndex].y;
+    const p2x = holes[segIndex + 1].x;
+    const p2y = holes[segIndex + 1].y;
+    const midX = (p0x + p2x) / 2;
+    const cpY = (segIndex + 1) % 2 === 1 ? CENTER_Y - 14 : CENTER_Y + 14;
+
+    // Quadratic bezier: B(t) = (1-t)²P0 + 2(1-t)tP1 + t²P2
+    const oneMinusT = 1 - segT;
+    const bx = oneMinusT * oneMinusT * p0x + 2 * oneMinusT * segT * midX + segT * segT * p2x;
+    const by = oneMinusT * oneMinusT * p0y + 2 * oneMinusT * segT * cpY + segT * segT * p2y;
+    sampleXValues.push(bx);
+    sampleYValues.push(by);
+
+    // Tangent: B'(t) = 2(1-t)(P1-P0) + 2t(P2-P1)
+    const tx = 2 * oneMinusT * (midX - p0x) + 2 * segT * (p2x - midX);
+    const ty = 2 * oneMinusT * (cpY - p0y) + 2 * segT * (p2y - cpY);
+    sampleAngleValues.push(Math.atan2(ty, tx) * (180 / Math.PI));
+  }
+
+  const needleX = useTransform(scrollYProgress, sampleKeys, sampleXValues);
+  const needleY = useTransform(scrollYProgress, sampleKeys, sampleYValues);
+  const needleAngle = useTransform(scrollYProgress, sampleKeys, sampleAngleValues);
 
   return (
     <div
