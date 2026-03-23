@@ -30,13 +30,14 @@ const ScrollNeedleThread: React.FC = () => {
     }
 
     function getPoint(t: number) {
-      const { width, height } = dimensionsRef.current;
+      const { height } = dimensionsRef.current;
       const startY = 50;
       const endY = height - 120;
       const y = startY + t * (endY - startY);
       const waves = height / 100;
-      const amplitude = Math.min(width * 0.15, 80);
-      const x = width / 2 + Math.sin(t * Math.PI * waves) * amplitude;
+      const amplitude = 30;
+      const centerX = 40;
+      const x = centerX + Math.sin(t * Math.PI * waves) * amplitude;
       return { x, y };
     }
 
@@ -154,9 +155,9 @@ const ScrollNeedleThread: React.FC = () => {
 
   return (
     <>
-      {/* Center seam line */}
+      {/* Seam line on left */}
       <div
-        className="fixed top-0 left-1/2 -translate-x-1/2 w-0 h-screen z-[4] pointer-events-none"
+        className="fixed top-0 left-10 w-0 h-screen z-[4] pointer-events-none"
         style={{ borderLeft: '2px dashed hsla(0, 0%, 100%, 0.08)' }}
       />
       <canvas
