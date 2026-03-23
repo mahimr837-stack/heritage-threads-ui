@@ -6,7 +6,7 @@ import StatsSection from '../components/StatsSection';
 import WovenShowcase from '../components/WovenShowcase';
 import EventsSection from '../components/EventsSection';
 import FooterSection from '../components/FooterSection';
-import ZipperTransition from '../components/ZipperTransition';
+import StitchTransition from '../components/StitchTransition';
 import StitchingWave from '../components/StitchingWave';
 
 const Index: React.FC = () => {
@@ -31,23 +31,19 @@ const Index: React.FC = () => {
       <Navbar />
       <HeroSection />
 
-      {/* Zipper unzip: Hero → Departments */}
-      <ZipperTransition direction="unzip" />
+      <StitchTransition />
 
       <DepartmentGrid />
 
-      {/* Zipper transition: Departments → Stats */}
-      <ZipperTransition direction="unzip" />
+      <StitchTransition />
 
       <StatsSection />
 
-      {/* Zipper transition: Stats → Showcase */}
-      <ZipperTransition direction="unzip" />
+      <StitchTransition />
 
       <WovenShowcase />
 
-      {/* Zipper transition: Showcase → Events */}
-      <ZipperTransition direction="unzip" />
+      <StitchTransition />
 
       {/* Events section with scattered dye jars */}
       <EventsSection />
