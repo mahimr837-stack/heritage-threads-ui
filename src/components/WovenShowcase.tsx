@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import vogueWomanArt2 from '@/assets/vogue-woman-art-2.png';
+import clotheslineImg from '@/assets/clothesline.png';
 
 const WovenShowcase: React.FC = () => {
   const [animate, setAnimate] = useState(false);
