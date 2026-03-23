@@ -114,16 +114,14 @@ const ScrollNeedleThread: React.FC = () => {
       ctx.shadowBlur = 0;
       ctx.shadowOffsetY = 0;
 
-      // Needle — place it slightly ahead of the thread tip
-      const tAhead = Math.min(1, progress + 0.012);
-      const needlePos = getPoint(tAhead);
-      const t1 = Math.max(0, tAhead - 0.002);
-      const t2 = Math.min(1, tAhead + 0.002);
+      // Needle angle
+      const t1 = Math.max(0, progress - 0.001);
+      const t2 = Math.min(1, progress + 0.001);
       const p1 = getPoint(t1);
       const p2 = getPoint(t2);
       const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x) - Math.PI / 2;
 
-      drawNeedle(needlePos.x, needlePos.y, angle);
+      drawNeedle(currentPoint.x, currentPoint.y, angle);
     }
 
     function animate() {
