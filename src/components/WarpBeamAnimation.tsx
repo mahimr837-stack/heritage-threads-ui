@@ -3,8 +3,6 @@ import React, { useEffect, useRef } from 'react';
 const WarpBeamAnimation: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number>(0);
-  const progressRef = useRef(0);
-  const targetRef = useRef(0);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -13,9 +11,10 @@ const WarpBeamAnimation: React.FC = () => {
     if (!ctx) return;
 
     let W = 0, H = 0;
+    let dpr = 1;
 
     function resize() {
-      const dpr = window.devicePixelRatio || 1;
+      dpr = window.devicePixelRatio || 1;
       const parent = canvas!.parentElement;
       W = parent?.clientWidth || window.innerWidth;
       H = parent?.clientHeight || window.innerHeight;
@@ -23,20 +22,8 @@ const WarpBeamAnimation: React.FC = () => {
       canvas!.height = H * dpr;
       canvas!.style.width = W + 'px';
       canvas!.style.height = H + 'px';
-      ctx!.scale(dpr, dpr);
     }
 
-    function onScroll() {
-      const el = canvas!.closest('section');
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const viewH = window.innerHeight;
-      // Progress from 0 to 1 as section scrolls through viewport
-      const raw = 1 - (rect.bottom / (viewH + rect.height));
-      targetRef.current = Math.max(0, Math.min(1, raw));
-    }
-
-    // Colors
     const STEEL = '#b8b4a8';
     const STEEL_HI = '#e8e4d8';
     const STEEL_LO = '#686460';
@@ -45,164 +32,184 @@ const WarpBeamAnimation: React.FC = () => {
     const YARN_LO = '#8a6830';
     const GOLD = '#c8943a';
 
-    function draw() {
+    let startTime = performance.now();
+
+    function draw(time: number) {
       if (!ctx) return;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, W, H);
 
-      const p = progressRef.current;
+      const elapsed = (time - startTime) / 1000;
+      // Slow oscillating progress for continuous animation
+      const p = (Math.sin(elapsed * 0.3) + 1) / 2; // 0 to 1 oscillation
+
       const cx = W / 2;
       const cy = H / 2;
 
-      // Beam parameters
-      const beamRadius = Math.min(W, H) * 0.18;
-      const beamWidth = W * 0.55;
-      const yarnRadius = beamRadius * (1 - p * 0.5); // shrinks as "unrolled"
+      const beamRadius = Math.min(W, H) * 0.22;
+      const beamWidth = W * 0.6;
+      const coreRadius = beamRadius * 0.3;
+      const yarnRadius = coreRadius + (beamRadius - coreRadius) * (1 - p * 0.4);
 
-      // Draw beam end-caps (circles)
       const leftX = cx - beamWidth / 2;
       const rightX = cx + beamWidth / 2;
 
-      // Yarn layers on beam (concentric arcs)
-      const layers = 12;
-      for (let i = layers; i >= 0; i--) {
-        const r = beamRadius * 0.35 + (yarnRadius - beamRadius * 0.35) * (i / layers);
-        const alpha = 0.08 + (i / layers) * 0.12;
-        
+      // Beam flanges (large discs at each end)
+      for (const bx of [leftX, rightX]) {
+        // Flange disc
         ctx.beginPath();
-        ctx.ellipse(leftX, cy, r * 0.3, r, 0, 0, Math.PI * 2);
-        ctx.fillStyle = i % 2 === 0 ? YARN : YARN_LO;
+        ctx.ellipse(bx, cy, beamRadius * 0.4, beamRadius * 1.1, 0, 0, Math.PI * 2);
+        ctx.strokeStyle = STEEL;
+        ctx.globalAlpha = 0.15;
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+
+        // Flange inner ring
+        ctx.beginPath();
+        ctx.ellipse(bx, cy, beamRadius * 0.25, beamRadius * 0.7, 0, 0, Math.PI * 2);
+        ctx.strokeStyle = STEEL_HI;
+        ctx.globalAlpha = 0.08;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+
+        // Radial spokes on flanges (rotating)
+        const spokeCount = 6;
+        for (let s = 0; s < spokeCount; s++) {
+          const angle = (s / spokeCount) * Math.PI * 2 + elapsed * 0.4;
+          ctx.beginPath();
+          ctx.moveTo(
+            bx + Math.cos(angle) * coreRadius * 0.4,
+            cy + Math.sin(angle) * coreRadius
+          );
+          ctx.lineTo(
+            bx + Math.cos(angle) * beamRadius * 0.38,
+            cy + Math.sin(angle) * beamRadius * 1.05
+          );
+          ctx.strokeStyle = STEEL_LO;
+          ctx.globalAlpha = 0.08;
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
+
+        // Center hub
+        ctx.beginPath();
+        ctx.arc(bx, cy, 5, 0, Math.PI * 2);
+        ctx.fillStyle = STEEL_HI;
+        ctx.globalAlpha = 0.15;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+
+      // Yarn wound on beam (concentric layers)
+      const layers = 16;
+      for (let i = layers; i >= 0; i--) {
+        const r = coreRadius + (yarnRadius - coreRadius) * (i / layers);
+        const alpha = 0.06 + (i / layers) * 0.15;
+        const color = i % 3 === 0 ? YARN_HI : i % 3 === 1 ? YARN : YARN_LO;
+
+        // Left side yarn ellipse
+        ctx.beginPath();
+        ctx.ellipse(leftX, cy, r * 0.38, r, 0, 0, Math.PI * 2);
+        ctx.fillStyle = color;
         ctx.globalAlpha = alpha;
         ctx.fill();
-        
+
+        // Right side yarn ellipse
         ctx.beginPath();
-        ctx.ellipse(rightX, cy, r * 0.3, r, 0, 0, Math.PI * 2);
+        ctx.ellipse(rightX, cy, r * 0.38, r, 0, 0, Math.PI * 2);
         ctx.fill();
       }
       ctx.globalAlpha = 1;
 
-      // Warp threads stretching across
-      const threadCount = 40;
-      const threadSpread = beamRadius * 1.6;
-      
+      // Warp threads stretching between the two ends
+      const threadCount = 50;
+      const threadSpread = yarnRadius * 1.8;
+
       for (let i = 0; i < threadCount; i++) {
         const t = i / (threadCount - 1);
         const yOff = (t - 0.5) * threadSpread;
         const baseY = cy + yOff;
 
-        // Thread tension based on scroll progress
-        const sag = Math.sin(t * Math.PI) * (1 - p) * 20;
-        const wave = Math.sin(p * Math.PI * 4 + i * 0.5) * 2 * (1 - p);
-        
+        // Dynamic wave motion
+        const wave1 = Math.sin(elapsed * 2.0 + i * 0.3) * 3;
+        const wave2 = Math.sin(elapsed * 1.2 + i * 0.7) * 2;
+        const sag = Math.sin(t * Math.PI) * 12;
+
         ctx.beginPath();
         ctx.moveTo(leftX, baseY);
-        
-        // Bezier curve for thread with sag
-        const cp1x = cx - beamWidth * 0.15;
-        const cp2x = cx + beamWidth * 0.15;
+
+        const cp1x = cx - beamWidth * 0.2;
+        const cp2x = cx + beamWidth * 0.2;
         ctx.bezierCurveTo(
-          cp1x, baseY + sag + wave,
-          cp2x, baseY + sag - wave,
+          cp1x, baseY + sag + wave1,
+          cp2x, baseY + sag + wave2,
           rightX, baseY
         );
-        
-        const threadAlpha = 0.06 + Math.abs(Math.sin(t * Math.PI)) * 0.14;
-        ctx.strokeStyle = i % 3 === 0 ? YARN_HI : YARN;
+
+        const threadAlpha = 0.04 + Math.abs(Math.sin(t * Math.PI)) * 0.12;
+        ctx.strokeStyle = i % 4 === 0 ? YARN_HI : i % 4 === 2 ? YARN_LO : YARN;
         ctx.globalAlpha = threadAlpha;
-        ctx.lineWidth = 0.8;
+        ctx.lineWidth = 0.7;
         ctx.stroke();
       }
       ctx.globalAlpha = 1;
 
-      // Beam axle (horizontal bar)
+      // Beam axle
       ctx.beginPath();
       ctx.moveTo(leftX, cy);
       ctx.lineTo(rightX, cy);
       ctx.strokeStyle = STEEL_LO;
-      ctx.globalAlpha = 0.08;
-      ctx.lineWidth = 3;
+      ctx.globalAlpha = 0.06;
+      ctx.lineWidth = 4;
       ctx.stroke();
       ctx.globalAlpha = 1;
 
-      // Beam flanges (left and right discs)
-      for (const bx of [leftX, rightX]) {
-        // Outer ring
-        ctx.beginPath();
-        ctx.ellipse(bx, cy, beamRadius * 0.35, beamRadius, 0, 0, Math.PI * 2);
-        ctx.strokeStyle = STEEL;
-        ctx.globalAlpha = 0.12;
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        // Inner ring
-        ctx.beginPath();
-        ctx.ellipse(bx, cy, beamRadius * 0.12, beamRadius * 0.35, 0, 0, Math.PI * 2);
-        ctx.strokeStyle = STEEL_HI;
-        ctx.globalAlpha = 0.06;
-        ctx.lineWidth = 1;
-        ctx.stroke();
-
-        // Center hub
-        ctx.beginPath();
-        ctx.arc(bx, cy, 4, 0, Math.PI * 2);
-        ctx.fillStyle = STEEL;
-        ctx.globalAlpha = 0.1;
-        ctx.fill();
-      }
-      ctx.globalAlpha = 1;
-
-      // Tension lines radiating from beam (decorative engineering marks)
-      const markCount = 8;
-      for (let i = 0; i < markCount; i++) {
-        const angle = (i / markCount) * Math.PI * 2 + p * Math.PI * 0.5;
-        const r1 = beamRadius * 1.05;
-        const r2 = beamRadius * 1.15;
+      // Tension tick marks rotating around flanges
+      const tickCount = 12;
+      for (let i = 0; i < tickCount; i++) {
+        const angle = (i / tickCount) * Math.PI * 2 + elapsed * 0.5;
+        const r1 = beamRadius * 1.12;
+        const r2 = beamRadius * 1.22;
 
         for (const bx of [leftX, rightX]) {
           ctx.beginPath();
-          ctx.moveTo(
-            bx + Math.cos(angle) * r1 * 0.35,
-            cy + Math.sin(angle) * r1
-          );
-          ctx.lineTo(
-            bx + Math.cos(angle) * r2 * 0.35,
-            cy + Math.sin(angle) * r2
-          );
+          ctx.moveTo(bx + Math.cos(angle) * r1 * 0.4, cy + Math.sin(angle) * r1);
+          ctx.lineTo(bx + Math.cos(angle) * r2 * 0.4, cy + Math.sin(angle) * r2);
           ctx.strokeStyle = GOLD;
-          ctx.globalAlpha = 0.06;
+          ctx.globalAlpha = 0.07;
           ctx.lineWidth = 0.5;
           ctx.stroke();
         }
       }
       ctx.globalAlpha = 1;
 
-      // Floating specs text (very subtle)
-      ctx.font = '10px "Cormorant Garamond", Georgia, serif';
+      // Subtle spec text
+      ctx.font = '10px Georgia, serif';
       ctx.fillStyle = GOLD;
-      ctx.globalAlpha = 0.08;
+      ctx.globalAlpha = 0.06;
       ctx.textAlign = 'right';
-      const specs = ['warp threads · 3,840', 'tension · ' + (p * 2.4).toFixed(1) + ' cN/tex', 'beam Ø 800 mm'];
-      specs.forEach((s, i) => {
-        ctx.fillText(s, W - 30, H - 40 + i * 16);
+      const tension = (1.2 + p * 1.2).toFixed(1);
+      const specs = ['warp threads · 3,840 ends', `tension · ${tension} cN/tex`, 'beam Ø 800 mm'];
+      specs.forEach((s, idx) => {
+        ctx.fillText(s, W - 24, H - 36 + idx * 15);
       });
       ctx.globalAlpha = 1;
     }
 
-    function animate() {
-      progressRef.current += (targetRef.current - progressRef.current) * 0.06;
-      draw();
+    function animate(time: number) {
+      draw(time);
       rafRef.current = requestAnimationFrame(animate);
     }
 
     resize();
-    onScroll();
-    animate();
-
+    rafRef.current = requestAnimationFrame(animate);
     window.addEventListener('resize', resize);
-    window.addEventListener('scroll', onScroll, { passive: true });
 
     return () => {
       window.removeEventListener('resize', resize);
-      window.removeEventListener('scroll', onScroll);
       cancelAnimationFrame(rafRef.current);
     };
   }, []);
