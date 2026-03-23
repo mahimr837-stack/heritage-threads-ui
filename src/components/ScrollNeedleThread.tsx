@@ -30,13 +30,14 @@ const ScrollNeedleThread: React.FC = () => {
     }
 
     function getPoint(t: number) {
-      const { width, height } = dimensionsRef.current;
+      const { height } = dimensionsRef.current;
       const startY = 50;
       const endY = height - 120;
       const y = startY + t * (endY - startY);
       const waves = height / 100;
-      const amplitude = Math.min(width * 0.15, 80);
-      const x = width / 2 + Math.sin(t * Math.PI * waves) * amplitude;
+      const amplitude = 30;
+      const centerX = 40;
+      const x = centerX + Math.sin(t * Math.PI * waves) * amplitude;
       return { x, y };
     }
 
