@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { Users, Building2, Globe2, Trophy } from 'lucide-react';
-import PhulkariEmbroidery from './PhulkariEmbroidery';
+import SewingMachineBlueprint from './SewingMachineBlueprint';
 
 const stats = [
   { label: 'Batches Graduated', value: 51, suffix: '+', icon: Trophy },
@@ -47,9 +47,9 @@ const StatsSection: React.FC = () => {
                           repeating-linear-gradient(-45deg, #F5F5DC 0px, #F5F5DC 1px, transparent 1px, transparent 8px)`,
       }} />
 
-      {/* Transparent Phulkari Embroidery Animation */}
+      {/* Transparent Sewing Machine Blueprint Animation */}
       <div className="absolute inset-0 flex items-center justify-center opacity-15 pointer-events-none z-[1]">
-        <PhulkariEmbroidery />
+        <SewingMachineBlueprint />
       </div>
 
       <div className="container mx-auto px-6 relative z-10">

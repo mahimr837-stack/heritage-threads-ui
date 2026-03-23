@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import PhulkariEmbroidery from './PhulkariEmbroidery';
-import SewingMachineBlueprint from './SewingMachineBlueprint';
+
 import DyeJars from './DyeJars';
 
 const WovenShowcase: React.FC = () => {
@@ -40,16 +40,6 @@ const WovenShowcase: React.FC = () => {
           <DyeJars />
         </motion.div>
 
-        {/* Animated Sewing Machine Blueprint */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true, amount: 0.2 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="max-w-lg mx-auto mt-12"
-        >
-          <SewingMachineBlueprint />
-        </motion.div>
       </div>
     </section>
   );
