@@ -33,7 +33,7 @@ const WovenShowcase: React.FC = () => {
         src={vogueWomanArt2}
         alt=""
         aria-hidden="true"
-        className="absolute top-6 left-6 w-36 md:w-52 pointer-events-none select-none z-[5] opacity-80"
+        className="absolute top-6 left-[70px] md:left-[80px] w-28 md:w-40 pointer-events-none select-none z-[5] opacity-80"
       />
 
       {/* Butex art 1 - bottom left (women weaving) */}
