@@ -7,7 +7,7 @@ import WovenShowcase from '../components/WovenShowcase';
 import EventsSection from '../components/EventsSection';
 import FooterSection from '../components/FooterSection';
 import ZipperTransition from '../components/ZipperTransition';
-import DyeJars from '../components/DyeJars';
+import StitchingWave from '../components/StitchingWave';
 
 const Index: React.FC = () => {
   return (
@@ -22,6 +22,11 @@ const Index: React.FC = () => {
           `,
         }}
       />
+
+      {/* Decorative Stitching Wave along left side */}
+      <div className="fixed left-4 top-0 bottom-0 pointer-events-none z-[5] hidden lg:block">
+        <StitchingWave className="w-full max-w-[120px] opacity-60 h-full" />
+      </div>
 
       <Navbar />
       <HeroSection />

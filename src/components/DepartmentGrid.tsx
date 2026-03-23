@@ -4,6 +4,7 @@ import {
   Layers, Shirt, Droplets, Scissors, Cog, Cpu,
   Palette, Leaf, BarChart3, Zap, Factory, Globe,
 } from 'lucide-react';
+import SpacetimeCurvature from './SpacetimeCurvature';
 
 const departments = [
   { name: 'Yarn Engineering', desc: 'Spinning science, fiber technology & yarn production systems.', icon: Layers },
@@ -38,8 +39,11 @@ const cardVariants = {
 
 const DepartmentGrid: React.FC = () => {
   return (
-    <section id="departments" className="py-24 md:py-32 bg-secondary/50">
-      <div className="container mx-auto px-6">
+    <section id="departments" className="py-24 md:py-32 bg-secondary/50 relative overflow-hidden">
+      {/* Spacetime Curvature Background */}
+      <SpacetimeCurvature />
+
+      <div className="container mx-auto px-6 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -71,7 +75,7 @@ const DepartmentGrid: React.FC = () => {
               <motion.div
                 key={dept.name}
                 variants={cardVariants}
-                className="group relative bg-card linen-texture rounded-xl p-6 border border-border hover:border-primary/40 transition-all duration-300 cursor-pointer"
+                className="group relative bg-card/90 backdrop-blur-sm linen-texture rounded-xl p-6 border border-border hover:border-primary/40 transition-all duration-300 cursor-pointer"
                 style={{
                   boxShadow: '0 2px 8px hsla(209, 30%, 26%, 0.06), 0 1px 3px hsla(209, 30%, 26%, 0.04)',
                 }}
