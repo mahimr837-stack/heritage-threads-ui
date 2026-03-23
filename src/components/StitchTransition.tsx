@@ -33,18 +33,16 @@ const StitchTransition: React.FC = () => {
         },
       });
 
-      // Needle follows path
       tl.to(needleRef.current, {
         motionPath: {
           path: guideRef.current,
           align: guideRef.current,
-          alignOrigin: [0.5, 0.5],
+          alignOrigin: [1, 0.5],
           autoRotate: true,
         },
         ease: 'none',
       }, 0);
 
-      // Thread draws in sync
       tl.to(threadRef.current, {
         strokeDashoffset: 0,
         ease: 'none',
@@ -54,31 +52,33 @@ const StitchTransition: React.FC = () => {
     return () => ctx.revert();
   }, []);
 
-  // A horizontal sinusoidal stitch path across the width
-  const stitchPath = `
-    M 0 40
-    C 30 10, 60 10, 90 40
-    C 120 70, 150 70, 180 40
-    C 210 10, 240 10, 270 40
-    C 300 70, 330 70, 360 40
-    C 390 10, 420 10, 450 40
-    C 480 70, 510 70, 540 40
-    C 570 10, 600 10, 630 40
-    C 660 70, 690 70, 720 40
-    C 750 10, 780 10, 810 40
-    C 840 70, 870 70, 900 40
-    C 930 10, 960 10, 990 40
-    C 1020 70, 1050 70, 1080 40
-  `;
+  // Real running stitch: needle goes DOWN through hole, travels under fabric, comes UP at next hole
+  // Visible on top = straight stitch line, invisible underneath = gap
+  // Holes are on the CENTER line (y=40). Thread goes: above-line stitch visible, then dips below briefly at each hole
+  const HOLE_SPACING = 45;
+  const NUM_HOLES = 25;
+  const CENTER_Y = 40;
 
-  // Stitch hole positions (peaks and troughs of the sine wave)
-  const holePositions = [
-    { x: 0, y: 40 }, { x: 90, y: 40 }, { x: 180, y: 40 },
-    { x: 270, y: 40 }, { x: 360, y: 40 }, { x: 450, y: 40 },
-    { x: 540, y: 40 }, { x: 630, y: 40 }, { x: 720, y: 40 },
-    { x: 810, y: 40 }, { x: 900, y: 40 }, { x: 990, y: 40 },
-    { x: 1080, y: 40 },
-  ];
+  // Generate hole positions along center line
+  const holes = Array.from({ length: NUM_HOLES }, (_, i) => ({
+    x: 10 + i * HOLE_SPACING,
+    y: CENTER_Y,
+  }));
+
+  // Build a running-stitch path: the thread pierces DOWN at odd holes, comes UP at even holes
+  // Visible stitch on top of fabric between pairs, hidden underneath between pairs
+  let stitchPath = `M ${holes[0].x} ${holes[0].y}`;
+  for (let i = 1; i < holes.length; i++) {
+    if (i % 2 === 1) {
+      // Visible stitch on top: slight arc upward between holes
+      const midX = (holes[i - 1].x + holes[i].x) / 2;
+      stitchPath += ` Q ${midX} ${CENTER_Y - 14}, ${holes[i].x} ${holes[i].y}`;
+    } else {
+      // Hidden stitch underneath: slight arc downward (will be shown as dotted/faint)
+      const midX = (holes[i - 1].x + holes[i].x) / 2;
+      stitchPath += ` Q ${midX} ${CENTER_Y + 14}, ${holes[i].x} ${holes[i].y}`;
+    }
+  }
 
   return (
     <div
@@ -87,90 +87,127 @@ const StitchTransition: React.FC = () => {
       style={{ height: '80px' }}
       aria-hidden="true"
     >
-      {/* Fabric strip background */}
+      {/* Fabric strip background with woven texture */}
       <div
         className="absolute inset-0"
         style={{
           backgroundColor: 'hsl(var(--card))',
-          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Crect width='8' height='8' fill='%233d2e1e' opacity='0.06'/%3E%3Crect x='0' y='0' width='4' height='1' fill='%23443322' opacity='0.04'/%3E%3Crect x='4' y='4' width='4' height='1' fill='%23443322' opacity='0.04'/%3E%3C/svg%3E")`,
-          backgroundSize: '8px 8px',
+          backgroundImage: `
+            url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10'%3E%3Crect width='10' height='10' fill='none'/%3E%3Cline x1='0' y1='0' x2='10' y2='0' stroke='%23000' stroke-width='0.3' opacity='0.04'/%3E%3Cline x1='0' y1='5' x2='10' y2='5' stroke='%23000' stroke-width='0.3' opacity='0.04'/%3E%3Cline x1='0' y1='0' x2='0' y2='10' stroke='%23000' stroke-width='0.3' opacity='0.03'/%3E%3Cline x1='5' y1='0' x2='5' y2='10' stroke='%23000' stroke-width='0.3' opacity='0.03'/%3E%3C/svg%3E")
+          `,
+          backgroundSize: '10px 10px',
         }}
       />
 
-      {/* Top and bottom border stitching lines */}
-      <div
-        className="absolute top-0 left-0 right-0 h-px"
-        style={{
-          backgroundImage: 'repeating-linear-gradient(90deg, hsl(var(--border)) 0px, hsl(var(--border)) 6px, transparent 6px, transparent 12px)',
-        }}
-      />
-      <div
-        className="absolute bottom-0 left-0 right-0 h-px"
-        style={{
-          backgroundImage: 'repeating-linear-gradient(90deg, hsl(var(--border)) 0px, hsl(var(--border)) 6px, transparent 6px, transparent 12px)',
-        }}
-      />
+      {/* Top border stitch marks */}
+      <div className="absolute top-0 left-0 right-0 h-px" style={{
+        backgroundImage: 'repeating-linear-gradient(90deg, hsl(var(--border)) 0px, hsl(var(--border)) 4px, transparent 4px, transparent 10px)',
+      }} />
+      {/* Bottom border stitch marks */}
+      <div className="absolute bottom-0 left-0 right-0 h-px" style={{
+        backgroundImage: 'repeating-linear-gradient(90deg, hsl(var(--border)) 0px, hsl(var(--border)) 4px, transparent 4px, transparent 10px)',
+      }} />
 
       <svg
-        viewBox="0 0 1080 80"
+        viewBox={`0 0 ${10 + (NUM_HOLES - 1) * HOLE_SPACING + 10} 80`}
         preserveAspectRatio="none"
         className="absolute inset-0 w-full h-full overflow-visible"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
-          <linearGradient id="stitch-needle-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="hsl(210, 20%, 92%)" />
-            <stop offset="50%" stopColor="hsl(215, 16%, 62%)" />
-            <stop offset="100%" stopColor="hsl(215, 20%, 40%)" />
+          <linearGradient id="st-needle-metal" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="hsl(210, 20%, 94%)" />
+            <stop offset="40%" stopColor="hsl(215, 16%, 70%)" />
+            <stop offset="100%" stopColor="hsl(215, 20%, 45%)" />
           </linearGradient>
-          <filter id="stitch-needle-shadow" x="-30%" y="-30%" width="160%" height="160%">
-            <feDropShadow dx="1" dy="2" stdDeviation="2" floodOpacity="0.35" floodColor="hsl(209, 30%, 10%)" />
+          <filter id="st-needle-drop" x="-40%" y="-40%" width="180%" height="180%">
+            <feDropShadow dx="0.5" dy="1.5" stdDeviation="1.5" floodOpacity="0.4" floodColor="hsl(209, 30%, 8%)" />
           </filter>
+          {/* Radial gradient for realistic puncture holes */}
+          <radialGradient id="st-hole-grad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="hsl(20, 10%, 8%)" />
+            <stop offset="60%" stopColor="hsl(20, 10%, 15%)" />
+            <stop offset="100%" stopColor="hsl(20, 10%, 25%)" stopOpacity="0" />
+          </radialGradient>
         </defs>
 
-        {/* Guide path (dotted) */}
+        {/* Guide path (faint dotted) */}
         <path
           ref={guideRef}
           d={stitchPath}
           stroke="hsl(var(--border))"
-          strokeWidth="1.5"
-          strokeDasharray="3 6"
+          strokeWidth="1"
+          strokeDasharray="2 5"
           strokeLinecap="round"
-          opacity="0.4"
+          opacity="0.25"
         />
 
-        {/* Thread drawn on scroll */}
+        {/* Thread (drawn on scroll) */}
         <path
           ref={threadRef}
           d={stitchPath}
           stroke="hsl(var(--terracotta, 12 76% 52%))"
-          strokeWidth="2.5"
+          strokeWidth="2.2"
           strokeLinecap="round"
+          strokeLinejoin="round"
           fill="none"
         />
 
-        {/* Stitch holes */}
-        {holePositions.map((pos, i) => (
+        {/* Stitch holes — realistic puncture marks */}
+        {holes.map((hole, i) => (
           <g key={i}>
-            <circle cx={pos.x} cy={pos.y} r="3" fill="hsl(var(--background))" opacity="0.6" />
-            <circle cx={pos.x} cy={pos.y} r="1.5" fill="hsl(209, 30%, 15%)" opacity="0.3" />
+            {/* Outer shadow ring — fabric pushed down around hole */}
+            <circle
+              cx={hole.x} cy={hole.y} r="4"
+              fill="none"
+              stroke="hsl(20, 8%, 30%)"
+              strokeWidth="0.6"
+              opacity="0.15"
+            />
+            {/* Fabric depression ring */}
+            <circle
+              cx={hole.x} cy={hole.y} r="2.8"
+              fill="none"
+              stroke="hsl(20, 8%, 20%)"
+              strokeWidth="0.5"
+              opacity="0.2"
+            />
+            {/* Dark puncture hole */}
+            <circle
+              cx={hole.x} cy={hole.y} r="1.8"
+              fill="url(#st-hole-grad)"
+              opacity="0.7"
+            />
+            {/* Tiny highlight on hole rim (light catching the edge) */}
+            <circle
+              cx={hole.x - 0.5} cy={hole.y - 0.5} r="0.6"
+              fill="hsl(40, 20%, 70%)"
+              opacity="0.15"
+            />
           </g>
         ))}
 
-        {/* Needle */}
-        <g ref={needleRef} filter="url(#stitch-needle-shadow)">
-          {/* Needle body — pointing right */}
+        {/* Needle group */}
+        <g ref={needleRef} filter="url(#st-needle-drop)">
+          {/* Needle shaft — long tapered shape */}
           <path
-            d="M -4 -2 Q -7 -2 -7 0 Q -7 2 -4 2 L 16 2 Q 22 0 22 0 Q 22 0 16 -2 Z"
-            fill="url(#stitch-needle-grad)"
+            d="M -3 -1.5 L 18 -0.8 Q 24 0 24 0 Q 24 0 18 0.8 L -3 1.5 Q -5 0 -3 -1.5 Z"
+            fill="url(#st-needle-metal)"
           />
-          {/* Needle eye */}
+          {/* Needle eye — elongated oval near the blunt end */}
+          <ellipse
+            cx="-1" cy="0" rx="2" ry="0.7"
+            fill="hsl(209, 30%, 12%)"
+            opacity="0.8"
+          />
+          {/* Subtle shine line along the shaft */}
           <line
-            x1="-3" y1="0"
-            x2="3" y2="0"
-            stroke="hsl(209, 30%, 15%)"
-            strokeWidth="1"
+            x1="2" y1="-0.6"
+            x2="16" y2="-0.3"
+            stroke="hsl(210, 20%, 88%)"
+            strokeWidth="0.4"
+            opacity="0.5"
             strokeLinecap="round"
           />
         </g>
