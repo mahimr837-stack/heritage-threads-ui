@@ -16,6 +16,14 @@ const WovenShowcase: React.FC = () => {
         minHeight: '80vh',
       }}
     >
+      {/* Vogue woman art - top left */}
+      <img
+        src={vogueWomanArt2}
+        alt=""
+        aria-hidden="true"
+        className="absolute top-6 left-6 w-36 md:w-52 pointer-events-none select-none z-[5] opacity-80"
+      />
+
       {/* Alpona Background */}
       <div
         className="absolute flex items-center justify-center pointer-events-none"
