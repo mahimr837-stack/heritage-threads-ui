@@ -9,11 +9,33 @@ import FooterSection from '../components/FooterSection';
 import StitchTransition from '../components/StitchTransition';
 import StitchingWave from '../components/StitchingWave';
 import ScrollNeedleThread from '../components/ScrollNeedleThread';
+import embroideryBorder from '@/assets/embroidery-border.jpg';
 
 const Index: React.FC = () => {
   return (
     <div className="min-h-screen bg-background relative">
-      {/* Scroll-driven needle & thread animation */}
+      {/* Embroidery border - left side */}
+      <div
+        className="fixed top-0 left-0 h-screen w-[45px] md:w-[60px] z-[3] pointer-events-none"
+        style={{
+          backgroundImage: `url(${embroideryBorder})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'left center',
+          backgroundRepeat: 'repeat-y',
+        }}
+      />
+      {/* Embroidery border - right side */}
+      <div
+        className="fixed top-0 right-0 h-screen w-[45px] md:w-[60px] z-[3] pointer-events-none"
+        style={{
+          backgroundImage: `url(${embroideryBorder})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'right center',
+          backgroundRepeat: 'repeat-y',
+        }}
+      />
+
+      {/* Scroll-driven needle & thread animation (above borders) */}
       <ScrollNeedleThread />
 
       {/* Parchment aged-edge texture overlay */}
