@@ -17,7 +17,7 @@ const WovenShowcase: React.FC = () => {
     <section className="py-24 md:py-32 relative overflow-hidden flex items-center justify-center"
       style={{
         background: 'radial-gradient(circle at center, #b81d22 0%, #5c0a0d 100%)',
-        minHeight: '80vh',
+        minHeight: '100vh',
       }}
     >
       {/* Clothesline image - top center */}
