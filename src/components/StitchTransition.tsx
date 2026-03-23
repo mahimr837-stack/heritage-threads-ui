@@ -123,13 +123,15 @@ const StitchTransition: React.FC = () => {
 
         {/* Needle */}
         <motion.g filter="url(#st-needle-drop)" style={{ x: needleX, y: needleY }}>
-          <path
-            d="M -3 -1.5 L 18 -0.8 Q 24 0 24 0 Q 24 0 18 0.8 L -3 1.5 Q -5 0 -3 -1.5 Z"
-            fill="url(#st-needle-metal)"
-            transform="translate(-12, 0)"
-          />
-          <ellipse cx="-13" cy="0" rx="2" ry="0.7" fill="hsl(209, 30%, 12%)" opacity="0.8" />
-          <line x1="-10" y1="-0.6" x2="4" y2="-0.3" stroke="hsl(210, 20%, 88%)" strokeWidth="0.4" opacity="0.5" strokeLinecap="round" />
+          <g transform="translate(13, 0)">
+            <path
+              d="M -3 -1.5 L 18 -0.8 Q 24 0 24 0 Q 24 0 18 0.8 L -3 1.5 Q -5 0 -3 -1.5 Z"
+              fill="url(#st-needle-metal)"
+              transform="translate(-12, 0)"
+            />
+            <ellipse cx="-13" cy="0" rx="2" ry="0.7" fill="hsl(209, 30%, 12%)" opacity="0.8" />
+            <line x1="-10" y1="-0.6" x2="4" y2="-0.3" stroke="hsl(210, 20%, 88%)" strokeWidth="0.4" opacity="0.5" strokeLinecap="round" />
+          </g>
         </motion.g>
       </svg>
     </div>
