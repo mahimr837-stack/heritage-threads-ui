@@ -3,6 +3,7 @@ import { motion, useInView } from 'framer-motion';
 import { Users, Building2, Globe2, Trophy } from 'lucide-react';
 import SewingMachineBlueprint from './SewingMachineBlueprint';
 
+
 const stats = [
   { label: 'Batches Graduated', value: 51, suffix: '+', icon: Trophy },
   { label: 'Departments', value: 12, suffix: '+', icon: Building2 },
