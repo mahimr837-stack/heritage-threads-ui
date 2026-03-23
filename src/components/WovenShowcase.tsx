@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import vogueWomanArt2 from '@/assets/vogue-woman-art-2.png';
 import clotheslineImg from '@/assets/clothesline.png';
+import butex1 from '@/assets/butex-1.png';
+import butex2 from '@/assets/butex-2.png';
+import butex3 from '@/assets/butex-3.png';
 
 const WovenShowcase: React.FC = () => {
   const [animate, setAnimate] = useState(false);
@@ -31,6 +34,30 @@ const WovenShowcase: React.FC = () => {
         alt=""
         aria-hidden="true"
         className="absolute top-6 left-6 w-36 md:w-52 pointer-events-none select-none z-[5] opacity-80"
+      />
+
+      {/* Butex art 1 - bottom left (women weaving) */}
+      <img
+        src={butex1}
+        alt=""
+        aria-hidden="true"
+        className="absolute bottom-4 left-4 w-40 md:w-56 pointer-events-none select-none z-[5] opacity-85"
+      />
+
+      {/* Butex art 2 - bottom right (sewing machine) */}
+      <img
+        src={butex2}
+        alt=""
+        aria-hidden="true"
+        className="absolute bottom-4 right-4 w-36 md:w-48 pointer-events-none select-none z-[5] opacity-85"
+      />
+
+      {/* Butex art 3 - top right (woman in dress) */}
+      <img
+        src={butex3}
+        alt=""
+        aria-hidden="true"
+        className="absolute top-6 right-6 w-32 md:w-44 pointer-events-none select-none z-[5] opacity-85"
       />
 
       {/* Alpona Background */}
