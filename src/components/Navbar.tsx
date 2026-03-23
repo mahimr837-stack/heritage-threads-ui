@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, GraduationCap } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
+import butexLogo from '@/assets/butex-logo.png';
 
 const navLinks = [
   { label: 'Academics', href: '#departments' },
