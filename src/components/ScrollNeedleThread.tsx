@@ -155,9 +155,9 @@ const ScrollNeedleThread: React.FC = () => {
 
   return (
     <>
-      {/* Center seam line */}
+      {/* Seam line on left */}
       <div
-        className="fixed top-0 left-1/2 -translate-x-1/2 w-0 h-screen z-[4] pointer-events-none"
+        className="fixed top-0 left-10 w-0 h-screen z-[4] pointer-events-none"
         style={{ borderLeft: '2px dashed hsla(0, 0%, 100%, 0.08)' }}
       />
       <canvas
