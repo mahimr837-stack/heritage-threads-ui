@@ -155,7 +155,7 @@ const StitchTransition: React.FC = () => {
         ))}
 
         {/* Needle */}
-        <motion.g filter="url(#st-needle-drop)" style={{ x: needleX, y: needleY }}>
+        <motion.g filter="url(#st-needle-drop)" style={{ x: needleX, y: needleY, rotate: needleAngle }}>
           <g transform="translate(13, 0)">
             <path
               d="M -3 -1.5 L 18 -0.8 Q 24 0 24 0 Q 24 0 18 0.8 L -3 1.5 Q -5 0 -3 -1.5 Z"
