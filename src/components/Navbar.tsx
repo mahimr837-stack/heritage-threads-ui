@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Volume2, VolumeX } from 'lucide-react';
 import butexLogo from '@/assets/butex-logo.png';
+import { toggleSound } from '@/hooks/usePianoSound';
 
 const navLinks = [
   { label: 'Academics', href: '#departments' },
