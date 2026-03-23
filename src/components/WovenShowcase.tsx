@@ -17,7 +17,7 @@ const WovenShowcase: React.FC = () => {
     <section className="py-24 md:py-32 relative overflow-hidden flex items-center justify-center"
       style={{
         background: 'radial-gradient(circle at center, #b81d22 0%, #5c0a0d 100%)',
-        minHeight: '80vh',
+        minHeight: '100vh',
       }}
     >
       {/* Clothesline image - top center */}
@@ -33,7 +33,7 @@ const WovenShowcase: React.FC = () => {
         src={vogueWomanArt2}
         alt=""
         aria-hidden="true"
-        className="absolute top-6 left-6 w-36 md:w-52 pointer-events-none select-none z-[5] opacity-80"
+        className="absolute top-6 left-[70px] md:left-[80px] w-28 md:w-40 pointer-events-none select-none z-[5] opacity-80"
       />
 
       {/* Butex art 1 - bottom left (women weaving) */}
@@ -41,7 +41,7 @@ const WovenShowcase: React.FC = () => {
         src={butex1}
         alt=""
         aria-hidden="true"
-        className="absolute bottom-4 left-4 w-40 md:w-56 pointer-events-none select-none z-[5] opacity-85"
+        className="absolute bottom-6 left-[70px] md:left-[80px] w-32 md:w-44 pointer-events-none select-none z-[5] opacity-85"
       />
 
       {/* Butex art 2 - bottom right (sewing machine) */}
