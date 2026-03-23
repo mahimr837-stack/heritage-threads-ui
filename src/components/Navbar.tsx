@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Volume2, VolumeX } from 'lucide-react';
 import butexLogo from '@/assets/butex-logo.png';
+import { toggleSound } from '@/hooks/usePianoSound';
 
 const navLinks = [
   { label: 'Academics', href: '#departments' },
@@ -13,6 +14,12 @@ const navLinks = [
 const Navbar: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isSoundOn, setIsSoundOn] = useState(false);
+
+  const handleToggleSound = () => {
+    const newState = toggleSound();
+    setIsSoundOn(newState);
+  };
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 40);
@@ -50,6 +57,14 @@ const Navbar: React.FC = () => {
               {link.label}
             </a>
           ))}
+          <button
+            onClick={handleToggleSound}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-foreground/20 text-foreground/70 hover:text-primary hover:border-primary transition-all duration-300 active:scale-[0.97]"
+            title={isSoundOn ? 'Sound Off' : 'Sound On'}
+          >
+            {isSoundOn ? <Volume2 size={16} /> : <VolumeX size={16} />}
+            <span className="text-xs">{isSoundOn ? 'Sound On' : 'Sound Off'}</span>
+          </button>
           <a
             href="#events"
             className="bg-primary text-primary-foreground px-5 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity active:scale-[0.97]"
@@ -88,6 +103,13 @@ const Navbar: React.FC = () => {
                   {link.label}
                 </a>
               ))}
+              <button
+                onClick={handleToggleSound}
+                className="flex items-center justify-center gap-2 px-5 py-3 rounded-lg text-sm font-medium border border-foreground/20 text-foreground/70 active:scale-[0.97]"
+              >
+                {isSoundOn ? <Volume2 size={16} /> : <VolumeX size={16} />}
+                <span>{isSoundOn ? 'Sound On' : 'Sound Off'}</span>
+              </button>
               <a
                 href="#events"
                 className="bg-primary text-primary-foreground px-5 py-3 rounded-lg text-sm font-semibold text-center"
