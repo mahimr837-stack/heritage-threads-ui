@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import PhulkariEmbroidery from './PhulkariEmbroidery';
 
+
 import DyeJars from './DyeJars';
 
 const WovenShowcase: React.FC = () => {
