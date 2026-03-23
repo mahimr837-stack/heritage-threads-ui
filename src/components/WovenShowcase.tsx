@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import PhulkariEmbroidery from './PhulkariEmbroidery';
-import SewingMachineBlueprint from './SewingMachineBlueprint';
+
 import DyeJars from './DyeJars';
 
 const WovenShowcase: React.FC = () => {
