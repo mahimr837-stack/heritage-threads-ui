@@ -1,5 +1,40 @@
 import React, { useEffect, useRef } from 'react';
 
+const THREAD_COUNT = 240;
+
+function lerp(a: number, b: number, t: number) { return a + (b - a) * t; }
+function clamp(v: number, a: number, b: number) { return Math.max(a, Math.min(b, v)); }
+function easeIO(t: number) { return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; }
+function easeO3(t: number) { return 1 - Math.pow(1 - t, 3); }
+function mapRange(v: number, a: number, b: number, c: number, d: number) {
+  return c + (d - c) * clamp((v - a) / (b - a), 0, 1);
+}
+
+interface Thread {
+  t: number; bAngle: number; targetY: number;
+  hue: number; sat: number; lig: number;
+  thick: number; phase: number; speed: number;
+}
+
+function initThreads(): Thread[] {
+  const threads: Thread[] = [];
+  for (let i = 0; i < THREAD_COUNT; i++) {
+    const t = i / (THREAD_COUNT - 1);
+    threads.push({
+      t,
+      bAngle: lerp(-Math.PI * 0.42, Math.PI * 0.42, t),
+      targetY: lerp(0.08, 0.92, t),
+      hue: lerp(32, 42, Math.random()),
+      sat: lerp(42, 58, Math.random()),
+      lig: lerp(50, 72, Math.random()),
+      thick: lerp(0.5, 1.4, Math.random()),
+      phase: Math.random() * Math.PI * 2,
+      speed: lerp(0.6, 1.4, Math.random()),
+    });
+  }
+  return threads;
+}
+
 const WarpBeamAnimation: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number>(0);
@@ -10,202 +45,319 @@ const WarpBeamAnimation: React.FC = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    let W = 0, H = 0;
-    let dpr = 1;
+    let W = 0, H = 0, cx = 0, cy = 0;
+    const threads = initThreads();
+    let time = 0;
+    // Use continuous time-based progress that oscillates
+    let scrollP = 0;
 
     function resize() {
-      dpr = window.devicePixelRatio || 1;
       const parent = canvas!.parentElement;
       W = parent?.clientWidth || window.innerWidth;
       H = parent?.clientHeight || window.innerHeight;
-      canvas!.width = W * dpr;
-      canvas!.height = H * dpr;
+      canvas!.width = W;
+      canvas!.height = H;
       canvas!.style.width = W + 'px';
       canvas!.style.height = H + 'px';
+      cx = W / 2;
+      cy = H / 2;
     }
 
-    const STEEL = '#b8b4a8';
-    const STEEL_HI = '#e8e4d8';
-    const STEEL_LO = '#686460';
-    const YARN = '#d4a862';
-    const YARN_HI = '#f0c880';
-    const YARN_LO = '#8a6830';
-    const GOLD = '#c8943a';
+    function getBeam() {
+      const bx = cx * 0.32;
+      const by = cy;
+      const outerR = Math.min(W, H) * 0.175;
+      const innerR = outerR * 0.58;
+      return { bx, by, outerR, innerR };
+    }
 
-    let startTime = performance.now();
+    function getLoomX() {
+      return cx + W * 0.34;
+    }
 
-    function draw(time: number) {
-      if (!ctx) return;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.clearRect(0, 0, W, H);
+    function drawFlange(bx: number, by: number, outerR: number, rotation: number, alpha: number, brightness: number) {
+      ctx!.save();
+      ctx!.globalAlpha = alpha;
+      ctx!.translate(bx, by);
 
-      const elapsed = (time - startTime) / 1000;
-      // Slow oscillating progress for continuous animation
-      const p = (Math.sin(elapsed * 0.3) + 1) / 2; // 0 to 1 oscillation
+      const discGrad = ctx!.createRadialGradient(-outerR * 0.2, -outerR * 0.25, 0, 0, 0, outerR);
+      discGrad.addColorStop(0, `rgba(${Math.round(200 * brightness)},${Math.round(192 * brightness)},${Math.round(176 * brightness)},0.9)`);
+      discGrad.addColorStop(0.4, `rgba(${Math.round(152 * brightness)},${Math.round(148 * brightness)},${Math.round(136 * brightness)},0.85)`);
+      discGrad.addColorStop(0.85, `rgba(${Math.round(100 * brightness)},${Math.round(96 * brightness)},${Math.round(88 * brightness)},0.8)`);
+      discGrad.addColorStop(1, `rgba(60,56,50,0.6)`);
+      ctx!.fillStyle = discGrad;
+      ctx!.beginPath(); ctx!.arc(0, 0, outerR, 0, Math.PI * 2); ctx!.fill();
 
-      const cx = W / 2;
-      const cy = H / 2;
+      ctx!.strokeStyle = `rgba(${Math.round(220 * brightness)},${Math.round(215 * brightness)},${Math.round(200 * brightness)},0.5)`;
+      ctx!.lineWidth = 2;
+      ctx!.beginPath(); ctx!.arc(0, 0, outerR - 1, 0, Math.PI * 2); ctx!.stroke();
 
-      const beamRadius = Math.min(W, H) * 0.22;
-      const beamWidth = W * 0.6;
-      const coreRadius = beamRadius * 0.3;
-      const yarnRadius = coreRadius + (beamRadius - coreRadius) * (1 - p * 0.4);
+      const SPOKES = 8;
+      for (let s = 0; s < SPOKES; s++) {
+        const a = rotation + (s / SPOKES) * Math.PI * 2;
+        const r0 = outerR * 0.12, r1 = outerR * 0.88;
+        ctx!.strokeStyle = `rgba(${Math.round(80 * brightness)},${Math.round(78 * brightness)},${Math.round(72 * brightness)},0.7)`;
+        ctx!.lineWidth = 2.5;
+        ctx!.lineCap = 'round';
+        ctx!.beginPath();
+        ctx!.moveTo(Math.cos(a) * r0, Math.sin(a) * r0);
+        ctx!.lineTo(Math.cos(a) * r1, Math.sin(a) * r1);
+        ctx!.stroke();
+        ctx!.strokeStyle = `rgba(${Math.round(180 * brightness)},${Math.round(175 * brightness)},${Math.round(160 * brightness)},0.2)`;
+        ctx!.lineWidth = 1;
+        ctx!.beginPath();
+        ctx!.moveTo(Math.cos(a) * r0 + 0.5, Math.sin(a) * r0 + 0.5);
+        ctx!.lineTo(Math.cos(a) * r1 + 0.5, Math.sin(a) * r1 + 0.5);
+        ctx!.stroke();
+      }
 
-      const leftX = cx - beamWidth / 2;
-      const rightX = cx + beamWidth / 2;
+      const BOLTS = 6;
+      const boltR = outerR * 0.72;
+      for (let b = 0; b < BOLTS; b++) {
+        const a = rotation * 0.5 + (b / BOLTS) * Math.PI * 2;
+        const bx2 = Math.cos(a) * boltR, by2 = Math.sin(a) * boltR;
+        ctx!.fillStyle = `rgba(50,48,44,0.9)`;
+        ctx!.beginPath(); ctx!.arc(bx2, by2, outerR * 0.038, 0, Math.PI * 2); ctx!.fill();
+        ctx!.strokeStyle = `rgba(160,155,140,0.5)`; ctx!.lineWidth = 1;
+        ctx!.beginPath(); ctx!.arc(bx2, by2, outerR * 0.038, 0, Math.PI * 2); ctx!.stroke();
+      }
 
-      // Beam flanges (large discs at each end)
-      for (const bx of [leftX, rightX]) {
-        // Flange disc
-        ctx.beginPath();
-        ctx.ellipse(bx, cy, beamRadius * 0.4, beamRadius * 1.1, 0, 0, Math.PI * 2);
-        ctx.strokeStyle = STEEL;
-        ctx.globalAlpha = 0.15;
-        ctx.lineWidth = 2.5;
-        ctx.stroke();
-        ctx.globalAlpha = 1;
+      const innerShadow = ctx!.createRadialGradient(0, 0, outerR * 0.5, 0, 0, outerR);
+      innerShadow.addColorStop(0, 'transparent');
+      innerShadow.addColorStop(1, 'rgba(6,4,2,0.4)');
+      ctx!.fillStyle = innerShadow;
+      ctx!.beginPath(); ctx!.arc(0, 0, outerR, 0, Math.PI * 2); ctx!.fill();
 
-        // Flange inner ring
-        ctx.beginPath();
-        ctx.ellipse(bx, cy, beamRadius * 0.25, beamRadius * 0.7, 0, 0, Math.PI * 2);
-        ctx.strokeStyle = STEEL_HI;
-        ctx.globalAlpha = 0.08;
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-        ctx.globalAlpha = 1;
+      ctx!.restore();
+    }
 
-        // Radial spokes on flanges (rotating)
-        const spokeCount = 6;
-        for (let s = 0; s < spokeCount; s++) {
-          const angle = (s / spokeCount) * Math.PI * 2 + elapsed * 0.4;
-          ctx.beginPath();
-          ctx.moveTo(
-            bx + Math.cos(angle) * coreRadius * 0.4,
-            cy + Math.sin(angle) * coreRadius
-          );
-          ctx.lineTo(
-            bx + Math.cos(angle) * beamRadius * 0.38,
-            cy + Math.sin(angle) * beamRadius * 1.05
-          );
-          ctx.strokeStyle = STEEL_LO;
-          ctx.globalAlpha = 0.08;
-          ctx.lineWidth = 1;
-          ctx.stroke();
+    function drawBeamFull(bx: number, by: number, outerR: number, yarnR: number, rotation: number, p: number) {
+      const establish = easeO3(clamp(p / 0.12, 0, 1));
+      const flangeDepth = outerR * 0.18;
+
+      drawFlange(bx - flangeDepth * 0.5, by, outerR, rotation, establish, 0.85);
+      drawFlange(bx + flangeDepth * 0.5, by, outerR, rotation, establish, 1.0);
+
+      ctx!.save();
+      ctx!.globalAlpha = establish;
+      const axleR = outerR * 0.08;
+      const axleGrad = ctx!.createRadialGradient(bx - axleR * 0.3, by - axleR * 0.3, 0, bx, by, axleR);
+      axleGrad.addColorStop(0, '#f0ece0');
+      axleGrad.addColorStop(0.5, '#b8b4a8');
+      axleGrad.addColorStop(1, '#505048');
+      ctx!.fillStyle = axleGrad;
+      ctx!.beginPath(); ctx!.arc(bx, by, axleR, 0, Math.PI * 2); ctx!.fill();
+      ctx!.restore();
+
+      if (yarnR > outerR * 0.1) {
+        ctx!.save();
+        ctx!.globalAlpha = establish * 0.9;
+        const layers = 8;
+        for (let l = layers; l >= 0; l--) {
+          const lr = yarnR * (0.5 + l * 0.065);
+          if (lr > yarnR) break;
+          const lt = l / layers;
+          ctx!.beginPath(); ctx!.arc(bx, by, lr, 0, Math.PI * 2);
+          ctx!.strokeStyle = `hsl(${lerp(30, 40, lt)}, ${lerp(45, 55, lt)}%, ${lerp(40, 62, lt)}%)`;
+          ctx!.lineWidth = yarnR * 0.065;
+          ctx!.stroke();
         }
-        ctx.globalAlpha = 1;
-
-        // Center hub
-        ctx.beginPath();
-        ctx.arc(bx, cy, 5, 0, Math.PI * 2);
-        ctx.fillStyle = STEEL_HI;
-        ctx.globalAlpha = 0.15;
-        ctx.fill();
-        ctx.globalAlpha = 1;
+        const yarnSurfGrad = ctx!.createRadialGradient(bx - yarnR * 0.3, by - yarnR * 0.4, 0, bx, by, yarnR);
+        yarnSurfGrad.addColorStop(0, 'rgba(240,200,128,0.35)');
+        yarnSurfGrad.addColorStop(0.6, 'rgba(180,140,80,0.1)');
+        yarnSurfGrad.addColorStop(1, 'rgba(100,70,30,0)');
+        ctx!.fillStyle = yarnSurfGrad;
+        ctx!.beginPath(); ctx!.arc(bx, by, yarnR, 0, Math.PI * 2); ctx!.fill();
+        ctx!.restore();
       }
+    }
 
-      // Yarn wound on beam (concentric layers)
-      const layers = 16;
-      for (let i = layers; i >= 0; i--) {
-        const r = coreRadius + (yarnRadius - coreRadius) * (i / layers);
-        const alpha = 0.06 + (i / layers) * 0.15;
-        const color = i % 3 === 0 ? YARN_HI : i % 3 === 1 ? YARN : YARN_LO;
+    function drawThreads(bx: number, by: number, outerR: number, yarnR: number, beamRotation: number, loomX: number, p: number, unrollProgress: number) {
+      const t0 = clamp(mapRange(p, 0.08, 0.22, 0, 1), 0, 1);
+      if (t0 <= 0) return;
 
-        // Left side yarn ellipse
-        ctx.beginPath();
-        ctx.ellipse(leftX, cy, r * 0.38, r, 0, 0, Math.PI * 2);
-        ctx.fillStyle = color;
-        ctx.globalAlpha = alpha;
-        ctx.fill();
+      threads.forEach((th, i) => {
+        const threadStart = (i / THREAD_COUNT) * 0.35;
+        const threadP = clamp((unrollProgress - threadStart) / (1 - threadStart * 0.5), 0, 1);
+        if (threadP <= 0) return;
 
-        // Right side yarn ellipse
-        ctx.beginPath();
-        ctx.ellipse(rightX, cy, r * 0.38, r, 0, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.globalAlpha = 1;
+        const te = easeO3(threadP);
+        const deptAngle = beamRotation * (1 + th.phase * 0.05) + th.bAngle;
+        const deptX = bx + Math.cos(deptAngle) * yarnR;
+        const deptY = by + Math.sin(deptAngle) * yarnR;
 
-      // Warp threads stretching between the two ends
-      const threadCount = 50;
-      const threadSpread = yarnRadius * 1.8;
+        const targetY = H * th.targetY;
+        const endX = lerp(bx + Math.cos(deptAngle) * yarnR * 2.5, loomX, easeIO(te));
+        const endY = lerp(by + Math.sin(deptAngle) * yarnR * 2.5, targetY, easeIO(te));
 
-      for (let i = 0; i < threadCount; i++) {
-        const t = i / (threadCount - 1);
-        const yOff = (t - 0.5) * threadSpread;
-        const baseY = cy + yOff;
+        const cpX = lerp(bx + Math.cos(deptAngle) * (outerR * 1.3), cx * 0.75, te);
+        const cpY = lerp(deptY, (deptY + endY) * 0.5, te);
 
-        // Dynamic wave motion
-        const wave1 = Math.sin(elapsed * 2.0 + i * 0.3) * 3;
-        const wave2 = Math.sin(elapsed * 1.2 + i * 0.7) * 2;
-        const sag = Math.sin(t * Math.PI) * 12;
+        const wave = te > 0.8 ? Math.sin(time * th.speed + th.phase) * 1.2 * (1 - te) * 3 : 0;
+        const alpha = lerp(0, 0.82, easeO3(threadP)) * lerp(1, 0.7, Math.abs(th.t - 0.5) * 2);
 
-        ctx.beginPath();
-        ctx.moveTo(leftX, baseY);
+        ctx!.save();
+        ctx!.globalAlpha = alpha;
+        ctx!.strokeStyle = `hsl(${th.hue},${th.sat}%,${th.lig}%)`;
+        ctx!.lineWidth = th.thick * lerp(2.2, 1.0, te);
+        ctx!.lineCap = 'round';
+        ctx!.beginPath();
+        ctx!.moveTo(deptX, deptY);
+        ctx!.quadraticCurveTo(cpX, cpY, endX, endY + wave);
+        ctx!.stroke();
 
-        const cp1x = cx - beamWidth * 0.2;
-        const cp2x = cx + beamWidth * 0.2;
-        ctx.bezierCurveTo(
-          cp1x, baseY + sag + wave1,
-          cp2x, baseY + sag + wave2,
-          rightX, baseY
-        );
-
-        const threadAlpha = 0.04 + Math.abs(Math.sin(t * Math.PI)) * 0.12;
-        ctx.strokeStyle = i % 4 === 0 ? YARN_HI : i % 4 === 2 ? YARN_LO : YARN;
-        ctx.globalAlpha = threadAlpha;
-        ctx.lineWidth = 0.7;
-        ctx.stroke();
-      }
-      ctx.globalAlpha = 1;
-
-      // Beam axle
-      ctx.beginPath();
-      ctx.moveTo(leftX, cy);
-      ctx.lineTo(rightX, cy);
-      ctx.strokeStyle = STEEL_LO;
-      ctx.globalAlpha = 0.06;
-      ctx.lineWidth = 4;
-      ctx.stroke();
-      ctx.globalAlpha = 1;
-
-      // Tension tick marks rotating around flanges
-      const tickCount = 12;
-      for (let i = 0; i < tickCount; i++) {
-        const angle = (i / tickCount) * Math.PI * 2 + elapsed * 0.5;
-        const r1 = beamRadius * 1.12;
-        const r2 = beamRadius * 1.22;
-
-        for (const bx of [leftX, rightX]) {
-          ctx.beginPath();
-          ctx.moveTo(bx + Math.cos(angle) * r1 * 0.4, cy + Math.sin(angle) * r1);
-          ctx.lineTo(bx + Math.cos(angle) * r2 * 0.4, cy + Math.sin(angle) * r2);
-          ctx.strokeStyle = GOLD;
-          ctx.globalAlpha = 0.07;
-          ctx.lineWidth = 0.5;
-          ctx.stroke();
+        if (te > 0.5) {
+          ctx!.globalAlpha = alpha * 0.25;
+          ctx!.strokeStyle = `hsl(${th.hue + 5},${th.sat - 10}%,${th.lig + 18}%)`;
+          ctx!.lineWidth = th.thick * 0.4;
+          ctx!.stroke();
         }
-      }
-      ctx.globalAlpha = 1;
-
-      // Subtle spec text
-      ctx.font = '10px Georgia, serif';
-      ctx.fillStyle = GOLD;
-      ctx.globalAlpha = 0.06;
-      ctx.textAlign = 'right';
-      const tension = (1.2 + p * 1.2).toFixed(1);
-      const specs = ['warp threads · 3,840 ends', `tension · ${tension} cN/tex`, 'beam Ø 800 mm'];
-      specs.forEach((s, idx) => {
-        ctx.fillText(s, W - 24, H - 36 + idx * 15);
+        ctx!.restore();
       });
-      ctx.globalAlpha = 1;
     }
 
-    function animate(time: number) {
-      draw(time);
-      rafRef.current = requestAnimationFrame(animate);
+    function drawReed(loomX: number, alpha: number, _p: number) {
+      const reedH = H * 0.78;
+      const reedY0 = cy - reedH / 2;
+      const reedW = 18;
+
+      ctx!.save();
+      ctx!.globalAlpha = alpha;
+      ctx!.fillStyle = 'rgba(100,95,85,0.9)';
+      const frameH = 12;
+      ctx!.fillRect(loomX - reedW / 2 - 2, reedY0 - frameH, reedW + 4, frameH);
+      ctx!.fillRect(loomX - reedW / 2 - 2, reedY0 + reedH, reedW + 4, frameH);
+
+      const DENTS = 48;
+      for (let d = 0; d < DENTS; d++) {
+        const dy = reedY0 + (d / (DENTS - 1)) * reedH;
+        ctx!.fillStyle = d % 3 === 0 ? 'rgba(180,175,160,0.6)' : 'rgba(120,116,106,0.35)';
+        ctx!.fillRect(loomX - 1, dy, 2, reedH / DENTS * 0.7);
+      }
+
+      ctx!.fillStyle = 'rgba(220,215,200,0.08)';
+      ctx!.fillRect(loomX - reedW / 2, reedY0, reedW * 0.3, reedH);
+      ctx!.restore();
     }
+
+    function drawTensionGuides(bx: number, _by: number, loomX: number, _p: number, unrollProgress: number) {
+      const alpha = Math.min(unrollProgress * 2, 1) * 0.12;
+      [0.28, 0.5, 0.72].forEach(frac => {
+        const y = H * frac;
+        ctx!.save();
+        ctx!.globalAlpha = alpha;
+        ctx!.strokeStyle = 'rgba(200,148,58,0.5)';
+        ctx!.lineWidth = 0.5;
+        ctx!.setLineDash([4, 8]);
+        ctx!.beginPath(); ctx!.moveTo(bx, y); ctx!.lineTo(loomX, y); ctx!.stroke();
+        ctx!.restore();
+      });
+    }
+
+    function drawFibreParticles(p: number, t: number) {
+      if (p < 0.1) return;
+      const alpha = Math.min((p - 0.1) * 3, 1) * 0.4;
+      for (let i = 0; i < 18; i++) {
+        const seed = i * 137.508;
+        const px = ((seed * 0.37 + t * 0.015 * (i % 3 === 0 ? 1 : -1)) % 1) * W;
+        const py = ((seed * 0.61 + t * 0.008) % 1) * H;
+        const size = lerp(0.6, 2.2, seed % 1);
+        ctx!.save();
+        ctx!.globalAlpha = alpha * lerp(0.3, 0.8, (seed * 0.13) % 1);
+        ctx!.fillStyle = `hsl(${35 + (seed % 12)},${40 + (seed % 18)}%,${65 + (seed % 15)}%)`;
+        ctx!.beginPath(); ctx!.arc(px, py, size, 0, Math.PI * 2); ctx!.fill();
+        ctx!.restore();
+      }
+    }
+
+    function drawFrame() {
+      ctx!.clearRect(0, 0, W, H);
+      const p = scrollP;
+      time += 0.016;
+
+      const { bx, by, outerR, innerR } = getBeam();
+      const loomX = getLoomX();
+
+      // Background vignette
+      const vg = ctx!.createRadialGradient(cx, cy, 0, cx, cy, Math.max(W, H) * 0.7);
+      vg.addColorStop(0, 'rgba(22,16,8,0)');
+      vg.addColorStop(1, 'rgba(6,4,2,0.7)');
+      ctx!.fillStyle = vg;
+      ctx!.fillRect(0, 0, W, H);
+
+      const unrollProgress = clamp(mapRange(p, 0.08, 0.9, 0, 1), 0, 1);
+      const beamRotation = unrollProgress * Math.PI * 14;
+      const yarnR = lerp(innerR, innerR * 0.35, easeIO(unrollProgress));
+
+      drawBeamFull(bx, by, outerR, yarnR, beamRotation, p);
+      drawThreads(bx, by, outerR, yarnR, beamRotation, loomX, p, unrollProgress);
+
+      if (p > 0.6) {
+        const reedAlpha = easeO3(mapRange(p, 0.6, 0.85, 0, 1));
+        drawReed(loomX, reedAlpha, p);
+      }
+
+      if (p > 0.3 && p < 0.95) {
+        drawTensionGuides(bx, by, loomX, p, unrollProgress);
+      }
+
+      drawFibreParticles(p, time);
+
+      rafRef.current = requestAnimationFrame(drawFrame);
+    }
+
+    // Use time-based continuous animation (oscillates 0→1→0)
+    function updateProgress() {
+      // Slow continuous cycle so animation always runs
+      scrollP = (Math.sin(time * 0.15) + 1) / 2;
+    }
+
+    // Override drawFrame to update scrollP from time
+    const originalDrawFrame = drawFrame;
+    const wrappedDrawFrame = () => {
+      updateProgress();
+      originalDrawFrame();
+    };
 
     resize();
-    rafRef.current = requestAnimationFrame(animate);
+    // Kick off with wrapped version
+    const startAnimation = () => {
+      ctx!.clearRect(0, 0, W, H);
+      updateProgress();
+      time += 0.016;
+
+      const p = scrollP;
+      const { bx, by, outerR, innerR } = getBeam();
+      const loomX = getLoomX();
+
+      const vg = ctx!.createRadialGradient(cx, cy, 0, cx, cy, Math.max(W, H) * 0.7);
+      vg.addColorStop(0, 'rgba(22,16,8,0)');
+      vg.addColorStop(1, 'rgba(6,4,2,0.7)');
+      ctx!.fillStyle = vg;
+      ctx!.fillRect(0, 0, W, H);
+
+      const unrollProgress = clamp(mapRange(p, 0.08, 0.9, 0, 1), 0, 1);
+      const beamRotation = unrollProgress * Math.PI * 14;
+      const yarnR = lerp(innerR, innerR * 0.35, easeIO(unrollProgress));
+
+      drawBeamFull(bx, by, outerR, yarnR, beamRotation, p);
+      drawThreads(bx, by, outerR, yarnR, beamRotation, loomX, p, unrollProgress);
+
+      if (p > 0.6) {
+        const reedAlpha = easeO3(mapRange(p, 0.6, 0.85, 0, 1));
+        drawReed(loomX, reedAlpha, p);
+      }
+
+      if (p > 0.3 && p < 0.95) {
+        drawTensionGuides(bx, by, loomX, p, unrollProgress);
+      }
+
+      drawFibreParticles(p, time);
+
+      rafRef.current = requestAnimationFrame(startAnimation);
+    };
+
+    rafRef.current = requestAnimationFrame(startAnimation);
     window.addEventListener('resize', resize);
 
     return () => {
