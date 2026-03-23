@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import vogueWomanArt2 from '@/assets/vogue-woman-art-2.png';
 import clotheslineImg from '@/assets/clothesline.png';
+import butex1 from '@/assets/butex-1.png';
+import butex2 from '@/assets/butex-2.png';
+import butex3 from '@/assets/butex-3.png';
 
 const WovenShowcase: React.FC = () => {
   const [animate, setAnimate] = useState(false);
