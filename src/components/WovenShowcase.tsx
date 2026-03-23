@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import PhulkariEmbroidery from './PhulkariEmbroidery';
 import sewingMachineArt from '@/assets/sewing-machine-art.png';
 import textileWomanArt from '@/assets/textile-woman-art.png';
+import vogueWomanArt from '@/assets/vogue-woman-art.png';
+import weaversTapestryArt from '@/assets/weavers-tapestry-art.png';
 
 const WovenShowcase: React.FC = () => {
   return (
