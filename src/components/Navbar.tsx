@@ -14,6 +14,12 @@ const navLinks = [
 const Navbar: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isSoundOn, setIsSoundOn] = useState(false);
+
+  const handleToggleSound = () => {
+    const newState = toggleSound();
+    setIsSoundOn(newState);
+  };
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 40);
