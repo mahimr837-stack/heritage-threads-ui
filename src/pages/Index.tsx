@@ -6,7 +6,7 @@ import StatsSection from '../components/StatsSection';
 import WovenShowcase from '../components/WovenShowcase';
 import EventsSection from '../components/EventsSection';
 import FooterSection from '../components/FooterSection';
-import ZipperTransition from '../components/ZipperTransition';
+import StitchTransition from '../components/StitchTransition';
 import StitchingWave from '../components/StitchingWave';
 
 const Index: React.FC = () => {
