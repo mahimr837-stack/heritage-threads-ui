@@ -8,6 +8,7 @@ import EventsSection from '../components/EventsSection';
 import FooterSection from '../components/FooterSection';
 import StitchTransition from '../components/StitchTransition';
 import StitchingWave from '../components/StitchingWave';
+import ScrollNeedleThread from '../components/ScrollNeedleThread';
 
 const Index: React.FC = () => {
   return (
