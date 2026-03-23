@@ -103,6 +103,13 @@ const Navbar: React.FC = () => {
                   {link.label}
                 </a>
               ))}
+              <button
+                onClick={handleToggleSound}
+                className="flex items-center justify-center gap-2 px-5 py-3 rounded-lg text-sm font-medium border border-foreground/20 text-foreground/70 active:scale-[0.97]"
+              >
+                {isSoundOn ? <Volume2 size={16} /> : <VolumeX size={16} />}
+                <span>{isSoundOn ? 'Sound On' : 'Sound Off'}</span>
+              </button>
               <a
                 href="#events"
                 className="bg-primary text-primary-foreground px-5 py-3 rounded-lg text-sm font-semibold text-center"
