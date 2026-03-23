@@ -1,7 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import WovenTypography from '../components/WovenTypography';
-import SewingMachineBlueprint from '../components/SewingMachineBlueprint';
+import PhulkariEmbroidery from './PhulkariEmbroidery';
+import SewingMachineBlueprint from './SewingMachineBlueprint';
+import DyeJars from './DyeJars';
 
 const WovenShowcase: React.FC = () => {
   return (
@@ -22,7 +23,22 @@ const WovenShowcase: React.FC = () => {
           </h2>
         </motion.div>
 
-        <WovenTypography />
+        {/* Phulkari Embroidery Animation (replaces old WovenTypography) */}
+        <PhulkariEmbroidery />
+
+        {/* Dye Jars Showcase */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="mt-16 mb-16"
+        >
+          <h3 className="font-display text-xl md:text-2xl font-semibold text-foreground text-center mb-8">
+            Natural Dye Laboratory
+          </h3>
+          <DyeJars />
+        </motion.div>
 
         {/* Animated Sewing Machine Blueprint */}
         <motion.div
