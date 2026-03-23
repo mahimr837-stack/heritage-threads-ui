@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { Users, Building2, Globe2, Trophy } from 'lucide-react';
-import SewingMachineBlueprint from './SewingMachineBlueprint';
+import WarpBeamAnimation from './WarpBeamAnimation';
 
 
 const stats = [
