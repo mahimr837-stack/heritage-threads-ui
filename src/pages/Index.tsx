@@ -68,6 +68,10 @@ const Index: React.FC = () => {
 
       <StitchTransition />
 
+      <VCMessageSection />
+
+      <StitchTransition />
+
       {/* Events section with scattered dye jars */}
       <EventsSection />
 
