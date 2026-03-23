@@ -17,6 +17,14 @@ const WovenShowcase: React.FC = () => {
         minHeight: '80vh',
       }}
     >
+      {/* Clothesline image - top center */}
+      <img
+        src={clotheslineImg}
+        alt=""
+        aria-hidden="true"
+        className="absolute top-4 left-1/2 -translate-x-1/2 w-[70vw] max-w-[600px] pointer-events-none select-none z-[5] opacity-90"
+      />
+
       {/* Vogue woman art - top left */}
       <img
         src={vogueWomanArt2}
