@@ -31,23 +31,19 @@ const Index: React.FC = () => {
       <Navbar />
       <HeroSection />
 
-      {/* Zipper unzip: Hero → Departments */}
-      <ZipperTransition direction="unzip" />
+      <StitchTransition />
 
       <DepartmentGrid />
 
-      {/* Zipper transition: Departments → Stats */}
-      <ZipperTransition direction="unzip" />
+      <StitchTransition />
 
       <StatsSection />
 
-      {/* Zipper transition: Stats → Showcase */}
-      <ZipperTransition direction="unzip" />
+      <StitchTransition />
 
       <WovenShowcase />
 
-      {/* Zipper transition: Showcase → Events */}
-      <ZipperTransition direction="unzip" />
+      <StitchTransition />
 
       {/* Events section with scattered dye jars */}
       <EventsSection />
