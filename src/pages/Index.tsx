@@ -4,6 +4,7 @@ import HeroSection from '../components/HeroSection';
 import DepartmentGrid from '../components/DepartmentGrid';
 import StatsSection from '../components/StatsSection';
 import WovenShowcase from '../components/WovenShowcase';
+import VCMessageSection from '../components/VCMessageSection';
 import EventsSection from '../components/EventsSection';
 import FooterSection from '../components/FooterSection';
 import StitchTransition from '../components/StitchTransition';
@@ -65,6 +66,10 @@ const Index: React.FC = () => {
       <StitchTransition />
 
       <WovenShowcase />
+
+      <StitchTransition />
+
+      <VCMessageSection />
 
       <StitchTransition />
 
